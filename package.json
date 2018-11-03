@@ -1,16 +1,33 @@
 {
-  "name": "food",
-  "version": "0.0.0",
-  "private": true,
+  "name": "express-rest-boilerplate",
+  "version": "1.0.0",
+  "description": "A simple boilerplate for REST API based apps",
+  "main": "app.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "test": "npm test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lech4rm/express-rest-boilerplate.git"
+  },
+  "author": "Leo Allen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lech4rm/express-rest-boilerplate/issues"
+  },
+  "homepage": "https://github.com/lech4rm/express-rest-boilerplate#readme",
   "dependencies": {
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
-    "ejs": "~2.5.7",
-    "express": "~4.16.0",
-    "http-errors": "~1.6.2",
-    "morgan": "~1.9.0"
+    "bcrypt": "^3.0.2",
+    "body-parser": "^1.18.3",
+    "chalk": "^2.4.1",
+    "compression": "^1.7.2",
+    "cors": "^2.8.4",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "glob": "^7.1.2",
+    "helmet": "^3.12.1",
+    "jsonwebtoken": "^8.3.0",
+    "mongoose": "^5.1.6",
+    "morgan": "^1.9.0"
   }
 }
