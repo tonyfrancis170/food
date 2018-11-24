@@ -16,6 +16,15 @@ const userSchema = new Schema(
       type: String,
       required: true
     },
+    role: {
+      type: Number,
+      enum: [1, 2, 3], // 1 - user , 2 - hotel , 3 - Admin
+      default: 1
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
     loggedIn: {
       type: Date
     }
