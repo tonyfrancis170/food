@@ -68,7 +68,7 @@ module.exports = {
           user: newUser._id,
           location: req.body.locationId,
           stockTime: moment()
-            .add(1, "days")
+            .add(3, "h")
             .format()
         });
 
@@ -148,8 +148,15 @@ module.exports = {
       });
     }
   },
-  addComment: async (req, res) => {
+  getUserInfo: async (req, res) => {
     try {
+      let userData = await User.findOne({ _id: req.user._id })
+        .select("name role email isActive activity")
+        .lean();
+
+      return res
+        .status(200)
+        .json({ message: "User loaded activated", data: userData });
     } catch (e) {
       console.log(e);
       return res.status(500).json({

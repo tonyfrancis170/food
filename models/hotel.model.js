@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 const hotelSchema = new Schema(
@@ -16,12 +15,18 @@ const hotelSchema = new Schema(
       type: Number,
       default: 50
     },
+    activity: [
+      {
+        info: {
+          type: String
+        },
+        time: {
+          type: Date
+        }
+      }
+    ],
     stockTime: {
       type: Date
-    },
-    comments: {
-      type: Schema.Types.ObjectId,
-      ref: "Comment"
     },
     likes: {
       type: Number,

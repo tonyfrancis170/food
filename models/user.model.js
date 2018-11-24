@@ -21,6 +21,16 @@ const userSchema = new Schema(
       enum: [1, 2, 3], // 1 - user , 2 - hotel , 3 - Admin
       default: 1
     },
+    activity: [
+      {
+        info: {
+          type: String
+        },
+        time: {
+          type: Date
+        }
+      }
+    ],
     isActive: {
       type: Boolean,
       default: true

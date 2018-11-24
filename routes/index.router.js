@@ -1,4 +1,5 @@
 const user = require("../controllers/user.controller");
+const hotel = require("../controllers/hotel.controller");
 const location = require("../controllers/location.controller");
 
 function authorize(role) {
@@ -32,14 +33,22 @@ module.exports = (openRouter, apiRouter) => {
 
   apiRouter.route("/logout").get(user.logout);
 
-  //Location routes
+  openRouter.route("/listAllLocations").get(location.listAllLocations);
 
-  apiRouter.route("/listAllLocations").get(location.listAllLocations);
+  apiRouter
+    .route("/getUserInfo")
+
+    .get(user.getUserInfo);
 
   apiRouter
     .route("/addLocation")
     .all(authorize("admin"))
     .post(location.addLocation);
+
+  apiRouter
+    .route("/addFoodPackets")
+    .all(authorize("hotel"))
+    .put(hotel.addFoodPackets);
 
   apiRouter
     .route("/reActivate")
@@ -55,4 +64,11 @@ module.exports = (openRouter, apiRouter) => {
     .route("/getAllUsers")
     .all(authorize("admin"))
     .get(user.getAllUsers);
+
+  apiRouter
+    .route("/getHotelInfo")
+    .all(authorize("hotel"))
+    .get(hotel.getHotelInfo);
+
+  apiRouter.route("/getHotelsByLocation").post(hotel.getHotelsByLocation);
 };
