@@ -13,7 +13,7 @@ const hotelSchema = new Schema(
     },
     foodPackets: {
       type: Number,
-      default: 50
+      default: 0
     },
     activity: [
       {

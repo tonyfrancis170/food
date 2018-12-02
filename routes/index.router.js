@@ -71,4 +71,8 @@ module.exports = (openRouter, apiRouter) => {
     .get(hotel.getHotelInfo);
 
   apiRouter.route("/getHotelsByLocation").post(hotel.getHotelsByLocation);
+
+  apiRouter.route("/reservePackets").put(user.reservePackets);
+
+  openRouter.route("/forgotPassword").post(user.forgotPassword);
 };

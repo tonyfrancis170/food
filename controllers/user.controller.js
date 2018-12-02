@@ -3,6 +3,9 @@ const User = require("../models/user.model");
 const Hotel = require("../models/hotel.model");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
+const nodemailer = require("nodemailer");
+
+const __ = require("../helpers/globals");
 module.exports = {
   login: async (req, res) => {
     try {
@@ -15,7 +18,20 @@ module.exports = {
       }
 
       if (!user.validPassword(req.body.password)) {
-        return res.status(400).json({ message: "Invalid email/password" });
+        if (user.failAttempts > 3) {
+          user.failAttempts = 0;
+          user.isActive = false;
+          await user.save();
+          return res.status(400).json({
+            message:
+              "Account has been disabled. Contact admin (admin@foodislife.com)"
+          });
+        } else {
+          user.failAttempts =
+            user.failAttempts === undefined ? 1 : user.failAttempts + 1;
+          await user.save();
+          return res.status(400).json({ message: "Invalid email/password" });
+        }
       }
       user.loggedIn = new Date();
       user = await user.save();
@@ -165,5 +181,102 @@ module.exports = {
     }
   },
 
-  modifyLikes: async (req, res) => {}
+  reservePackets: async (req, res) => {
+    try {
+      const { count, hotelId } = req.body;
+
+      let hotelData = await Hotel.findOne({ _id: hotelId }).populate({
+        path: "user",
+        select: "name"
+      });
+
+      if (moment().isAfter(hotelData.stockTime)) {
+        return res.status(200).json({
+          message: "Food packets have expired"
+        });
+      }
+
+      if (count > hotelData.foodPackets) {
+        return res.status(200).json({
+          message: "Not enough packets left"
+        });
+      }
+
+      let hotelActivity = {
+          info: `${req.user.name} reserved ${count} packet(s)`,
+          time: new Date()
+        },
+        userActivity = {
+          info: `You purchased ${count} packets from ${hotelData.user.name}`,
+          time: new Date()
+        };
+
+      hotelData.foodPackets = hotelData.foodPackets - count;
+      hotelData.activity.push(hotelActivity);
+      await hotelData.save();
+
+      await User.update(
+        { _id: req.user._id },
+        { $push: { activity: userActivity } }
+      );
+
+      return res.status(200).json({
+        message: "Packets reserved successfully"
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal server error"
+      });
+    }
+  },
+
+  forgotPassword: async (req, res) => {
+    try {
+      let user = await User.findOne({ email: req.body.email }).lean();
+
+      if (!user) {
+        return res.status(400).json({ message: "User not found" });
+      }
+
+      let token = jwt.sign({ _id: user._id }, "asdasdasdasd", {
+        expiresIn: 600
+      });
+
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        // port: 587,
+        // secure: false, // true for 465, false for other ports
+        auth: {
+          user: "foodislife170@gmail.com",
+          pass: "Sachin@001"
+        }
+      });
+
+      let mailOptions = {
+        from: "foodislife170@gmail.com", // sender address
+        to: "le.ch4rm@gmail.com", // list of receivers
+        subject: "Food is life | Password reset link", // Subject line
+
+        html: `<a href="${token}">Click here to reset password</a>` // html body
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+          return res.status(400).json({
+            message: "Link invalid/expired"
+          });
+        }
+        return res.status(200).json({
+          message: "Please check your inbox for the password reset link"
+        });
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal server error"
+      });
+    }
+  }
 };

@@ -52,6 +52,10 @@ const methods = {
         .exec()
         .then(data => {
           data.activity = data.activity.reverse();
+          if (moment().isAfter(data.stockTime)) {
+            data.foodPackets = 0;
+          }
+
           resolve(data);
         })
         .catch(e => {
