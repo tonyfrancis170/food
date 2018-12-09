@@ -45,6 +45,9 @@ const userSchema = new Schema(
     },
     loggedIn: {
       type: Date
+    },
+    emailToken: {
+      type: String
     }
   },
   { timestamps: true }

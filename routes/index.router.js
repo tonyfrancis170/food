@@ -75,4 +75,8 @@ module.exports = (openRouter, apiRouter) => {
   apiRouter.route("/reservePackets").put(user.reservePackets);
 
   openRouter.route("/forgotPassword").post(user.forgotPassword);
+
+  openRouter.route("/verifyEmailToken").post(user.verifyEmailToken);
+
+  openRouter.route("/setPassword").post(user.setPassword);
 };

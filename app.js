@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const glob = require("glob");
 const cors = require("cors");
-const compression = require("compression");
 const chalk = require("chalk");
 
 /* Global helpers */

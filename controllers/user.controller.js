@@ -4,7 +4,8 @@ const Hotel = require("../models/hotel.model");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const nodemailer = require("nodemailer");
-
+const crypto = require("crypto");
+const fetch = require("node-fetch");
 const __ = require("../helpers/globals");
 module.exports = {
   login: async (req, res) => {
@@ -56,6 +57,29 @@ module.exports = {
   },
   signup: async (req, res) => {
     try {
+      // Verify captcha initally
+      let captchaSecret = "6LfgqX8UAAAAAFe9m78FDKcYi1aPWDFrvb4gq5He";
+
+      let { captchaToken } = req.body;
+
+      let captchaStream = await fetch(
+        "https://www.google.com/recaptcha/api/siteverify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `secret=${captchaSecret}&response=${captchaToken}`
+        }
+      );
+
+      let captchaData = await captchaStream.json();
+
+      if (!captchaData.success) {
+        return res.status(403).json({
+          message: "Illegal access"
+        });
+      }
+
+      // Registration validation
       let user = await User.findOne({ email: req.body.email }).lean();
       if (user) {
         return res.status(400).json({ message: "User already exists" });
@@ -233,15 +257,29 @@ module.exports = {
 
   forgotPassword: async (req, res) => {
     try {
-      let user = await User.findOne({ email: req.body.email }).lean();
+      let user = await User.findOneAndUpdate(
+        { email: req.body.email },
+        { new: true }
+      ).lean();
 
       if (!user) {
         return res.status(400).json({ message: "User not found" });
       }
 
-      let token = jwt.sign({ _id: user._id }, "asdasdasdasd", {
-        expiresIn: 600
-      });
+      let randomString = crypto.randomBytes(8).toString("hex");
+
+      await User.update(
+        { email: req.body.email },
+        { $set: { emailToken: randomString } }
+      );
+
+      let token = jwt.sign(
+        { _id: user._id, emailToken: randomString },
+        "asdasdasdasd",
+        {
+          expiresIn: 6000000
+        }
+      );
 
       let transporter = nodemailer.createTransport({
         service: "gmail",
@@ -258,7 +296,7 @@ module.exports = {
         to: "le.ch4rm@gmail.com", // list of receivers
         subject: "Food is life | Password reset link", // Subject line
 
-        html: `<a href="${token}">Click here to reset password</a>` // html body
+        html: `<a href="http://localhost:8000/#!/forgot-password/${token}" target="_blank">Click here to reset password</a>` // html body
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
@@ -271,6 +309,87 @@ module.exports = {
         return res.status(200).json({
           message: "Please check your inbox for the password reset link"
         });
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal server error"
+      });
+    }
+  },
+
+  verifyEmailToken: async (req, res) => {
+    try {
+      let token = req.body.token;
+
+      jwt.verify(token, "asdasdasdasd", async (err, decoded) => {
+        if (err) {
+          return res.status(200).json({
+            message: "Token expired",
+            valid: false
+          });
+        } else {
+          let user = await User.findOne({
+            _id: decoded._id,
+            emailToken: decoded.emailToken
+          }).lean();
+
+          if (user) {
+            return res.status(200).json({
+              message: "Token valid",
+              valid: decoded._id
+            });
+          } else {
+            return res
+              .status(200)
+              .json({ message: "Token invalid", valid: false });
+          }
+        }
+      });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        message: "Internal server error"
+      });
+    }
+  },
+
+  setPassword: async (req, res) => {
+    try {
+      let { token, password } = req.body;
+      let { generateHash } = new User();
+
+      jwt.verify(token, "asdasdasdasd", async (err, decoded) => {
+        if (err) {
+          console.log(err);
+          return res.status(200).json({
+            message: "Token expired",
+            valid: false
+          });
+        } else {
+          let user = await User.findOne({
+            _id: decoded._id,
+            emailToken: decoded.emailToken
+          }).lean();
+
+          if (user) {
+            await User.update(
+              {
+                _id: decoded._id
+              },
+              { $set: { password: generateHash(password) } }
+            ).lean();
+
+            return res.status(200).json({
+              message: "Password changed successfully",
+              valid: true
+            });
+          } else {
+            return res
+              .status(200)
+              .json({ message: "Token invalid", valid: false });
+          }
+        }
       });
     } catch (e) {
       console.log(e);
