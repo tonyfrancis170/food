@@ -293,7 +293,7 @@ module.exports = {
 
       let mailOptions = {
         from: "foodislife170@gmail.com", // sender address
-        to: "le.ch4rm@gmail.com", // list of receivers
+        to: req.body.email, // list of receivers
         subject: "Food is life | Password reset link", // Subject line
 
         html: `<a href="http://localhost:8000/#!/forgot-password/${token}" target="_blank">Click here to reset password</a>` // html body
