@@ -296,7 +296,7 @@ module.exports = {
         to: req.body.email, // list of receivers
         subject: "Food is life | Password reset link", // Subject line
 
-        html: `<a href="http://localhost:8000/#!/forgot-password/${token}" target="_blank">Click here to reset password</a>` // html body
+        html: `<a href="https://food-is-life-e4fb4.firebaseapp.com/#!/forgot-password/${token}" target="_blank">Click here to reset password</a>` // html body
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
